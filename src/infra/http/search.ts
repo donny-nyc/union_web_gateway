@@ -17,9 +17,9 @@ router.get('/', (req: SearchRequest, res: Response) => {
 
   const { name } = req.query;
 
-  SearchController.fetch(name);
+  const results = SearchController.fetch(name);
 
-  res.json({ results: [name] });
+  res.json({ results });
 });
 
 export default router;

@@ -1,11 +1,14 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import search from './infra/http/search';
+import cors from 'cors';
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
+
+app.use(cors());
 
 app.get('/', (_: Request, res: Response) => {
   res.json({message: 'express'});
