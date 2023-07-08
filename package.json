@@ -1,0 +1,14 @@
+{
+  "name": "gateway",
+  "version": "0.1.0",
+  "description": "API Gateway for HTTP clients",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Stephen Donahue",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  }
+}
