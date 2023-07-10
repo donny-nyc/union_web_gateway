@@ -1,4 +1,5 @@
-import source, { SearchSource } from "../../sources/dummy_search_source";
+import source from "../../sources/cms_search_source";
+import SearchSource from "../../sources/types/search_source_i";
 
 export type SearchResults = {
   id: string,
@@ -12,7 +13,7 @@ class SearchController {
     this.source = source;
   }
 
-  fetch(name: string): SearchResults[] {
+  async fetch(name: string): Promise<SearchResults[]> {
     const results = this.source.fetch(name);
 
     return results;

@@ -4,22 +4,30 @@ export type SearchResult = {
 };
 
 export interface SearchSource {
-  fetch: (name: string) => SearchResult[];
+  fetch: (name: string) => Promise<SearchResult[]>;
 };
 
 class DummySearchSource {
-  fetch = (_: string): SearchResult[] => {
-    const results: SearchResult[] = [];
+  fetch = async (_: string): Promise<SearchResult[]> => {
+    const requestPromise = new Promise<SearchResult[]>((resolve) => {
+      const dummyResults: SearchResult[] = [
+        {
+          name: 'Mango',
+          id: 'mng10',
+        },
+        {
+          name: 'Porridge',
+          id: 'prrd9',
+        },
+      ];
 
-    const count = Math.floor(Math.random() * (100)) + 1;
-    for (let i = 0; i < count; i++) {
-      results.push({
-        id: `${Math.random() * 10000}`,
-        name: `${Math.random() * 10000}`,
-      });
-    }
+      resolve(dummyResults);
+    });
 
-    return results;
+    const searchResults: SearchResult[] = await requestPromise;
+
+    console.log(searchResults);
+    return searchResults;
   }
 };
 

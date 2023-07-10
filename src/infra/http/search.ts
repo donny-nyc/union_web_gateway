@@ -9,7 +9,7 @@ router.use((req, _, next) => {
   next();
 });
 
-router.get('/', (req: SearchRequest, res: Response) => {
+router.get('/', async (req: SearchRequest, res: Response) => {
   let errors: {[key: string]: string[]} | undefined = SearchRequestValidator(req);
   if(errors) {
     res.status(400).json({ errors });
@@ -17,7 +17,7 @@ router.get('/', (req: SearchRequest, res: Response) => {
 
   const { name } = req.query;
 
-  const results = SearchController.fetch(name);
+  const results = await SearchController.fetch(name);
 
   res.json({ results });
 });
