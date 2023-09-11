@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import search from './infra/http/search';
+import orders from './infra/http/orders';
 import cors from 'cors';
 
 dotenv.config();
@@ -15,6 +16,8 @@ app.get('/', (_: Request, res: Response) => {
 });
 
 app.use('/search', search);
+
+app.use('/orders', orders);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
