@@ -14,6 +14,13 @@ type NewOrderResult = {
   }
 };
 
+type CancelledOrderResult = {
+  message: string,
+  data: {
+    id: string
+  }
+};
+
 export interface OrdersSourceI {
   startNewOrder: () => Promise<Order>;
   addToOrder: (orderId: string, productId: string, count: number) => Promise<Order>;
@@ -110,6 +117,51 @@ class OrdersSource {
           const orderResult: NewOrderResult = JSON.parse(Buffer.concat(data).toString())
 
           console.log('[Orders] new order: ', orderResult);
+
+          const order: Order = {
+            id: orderResult.data.order.id
+          }
+
+          resolve(order);
+        });
+      });
+
+      req.end();
+    });
+
+    const result: Order = await requestPromise;
+
+    console.log(result);
+
+    return result;
+  }
+
+  cancelOrder = async (orderId: string): Promise<Order> => {
+    const requestPromise = new Promise<Order>((resolve) => {
+      console.log('[Orders] Cancelling an order');
+
+      const post_options = {
+        http: 'localhost',
+        port: 4321,
+        path: '/orders',
+        method: 'DELETE',
+      };
+
+      const req = http.request(post_options, (res) => {
+        let data: any = [];
+
+        res.on('data', chunk => {
+          data.push(chunk);
+        });
+
+        res.on('end', () => {
+          console.log('Order Cancelled');
+
+          console.log(Buffer.concat(data).toString());
+
+          const orderResult: CancelledOrderResult = JSON.parse(Buffer.concat(data).toString());
+
+          console.log('[Orders] Cancelled Order:', orderResult);
 
           const order: Order = {
             id: orderResult.data.order.id

@@ -19,6 +19,12 @@ class OrdersController {
 
     return results;
   }
+
+  async cancelOrder(orderId: string): Promise<Order> {
+    const results = this.source.cancelOrder(orderId);
+
+    return results;
+  }
 };
 
 const controller = new OrdersController(source);

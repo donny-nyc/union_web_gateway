@@ -17,6 +17,13 @@ router.post('/start-order', async (_: Request, res: Response) => {
   res.json({ results });
 });
 
+router.delete('/cancel-order/:orderId', bodyParser.json(), async(req: Request, res: Response) => {
+  console.log('[Cancel Order]', req.body);
+  console.log('[Cancel Order]', req.params);
+
+  const orderId = req.params.orderId;
+});
+
 router.put('/add-to-order/:orderId', bodyParser.json(), async(req: Request, res: Response) => {
   console.log('[add to order]', req.body);
   console.log('[add to order]', req.params);
