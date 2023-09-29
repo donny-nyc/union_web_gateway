@@ -1,5 +1,5 @@
-import Order from './types/order';
 import http from 'http';
+import Order, { OrderItem } from './types/order';
 
 type OrderResponse = {
   products: any,
@@ -24,9 +24,82 @@ type CancelledOrderResult = {
 export interface OrdersSourceI {
   startNewOrder: () => Promise<Order>;
   addToOrder: (orderId: string, productId: string, count: number) => Promise<Order>;
+  cancelOrder: (orderId: string) => Promise<Order>;
+  //getOrder: (orderId: string) => Promise<Order>;
 };
 
+
 class OrdersSource {
+  cancelOrder = async (orderId: string): Promise<Order> => {
+
+  };
+
+  /*
+  getOrder = async (orderId: string): Promise<Order> => {
+    const requestPromise = new Promise<Order>((resolve) => {
+      console.log(`[Orders] Fetching order ${orderId}`);
+
+      const get_options = {
+        host: 'localhost',
+        port: 4321,
+        path: `/orders/${orderId}`,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      };
+
+      const req = http.request(get_options, (res) => {
+        let data: any = []
+
+        if(res.statusCode !== 200) {
+          throw new Error("failed to get");
+        }
+
+        res.on('data', chunk => {
+          data.push(chunk);
+        });
+
+        res.on('end', () => {
+          console.log('Order found');
+
+          console.log(Buffer.concat(data).toString());
+
+          const orderResult: NewOrderResult = JSON.parse(Buffer.concat(data).toString())
+
+          console.log('[Orders] order found: ', orderResult);
+
+          const order: Order = {
+            id: orderResult.data.order.id,
+            //items: orderResult.data.order.products
+          }
+
+          for(item: OrderItem in orderResult.data.order.products) {
+
+          }
+
+          resolve(order);
+        });
+      });
+
+      try {
+        req.write(post_data);
+        req.end();
+      } catch (e: any) {
+        console.error(e);
+      }
+    });
+
+    const result: Order = await requestPromise;
+
+    console.log(result);
+
+    return result;
+
+    });
+  }
+*/
+
   addToOrder = async (orderId: string, productId: string, count: number): Promise<Order> => {
     const requestPromise = new Promise<Order>((resolve) => {
       console.log(`[Orders] Adding product to order: pid: ${productId}, count: ${count}, orderId: ${orderId}`);

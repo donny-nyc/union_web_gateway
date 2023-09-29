@@ -22,6 +22,14 @@ router.delete('/cancel-order/:orderId', bodyParser.json(), async(req: Request, r
   console.log('[Cancel Order]', req.params);
 
   const orderId = req.params.orderId;
+
+  const results = await OrdersController.cancelOrder(orderId);
+
+  // we need type safety on these responses
+  // impossible to tell what's being returned 
+  // without some serious digging
+  // should be possible within a couple hops, at most
+  res.json({ results });
 });
 
 router.put('/add-to-order/:orderId', bodyParser.json(), async(req: Request, res: Response) => {
@@ -32,9 +40,27 @@ router.put('/add-to-order/:orderId', bodyParser.json(), async(req: Request, res:
   const productId = req.body.productId;
   const count = req.body.count;
 
-  const results = await OrdersController.addProductToOrder(orderId, productId, count);
+  const results 
+      = await OrdersController.addProductToOrder(
+        orderId, 
+        productId, 
+        count
+      );
 
   res.json({ results });
+});
+
+router.get('/order-items/:orderId', bodyParser.json(), async(req: Request, res: Response) => {
+  console.log('[GET Order Items]', req.body);
+  console.log('[GET Order Items]', req.params);
+
+  const orderId = req.params.orderId;
+
+  //const itemIds = await OrdersController.getOrderItems(orderId);
+
+  //const orderItems = await CMSController.bulkFetchItems(itemIds);
+
+  // res.json({ orderItems }) or something to that effect
 });
 
 export default router;

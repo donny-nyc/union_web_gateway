@@ -25,6 +25,10 @@ class OrdersController {
 
     return results;
   }
+
+  async getOrderItems(orderId: string): Promise<string[]> {
+    const results = this.source.getOrder(orderId);
+  }
 };
 
 const controller = new OrdersController(source);
