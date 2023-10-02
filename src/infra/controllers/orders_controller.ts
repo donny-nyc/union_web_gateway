@@ -15,19 +15,27 @@ class OrdersController {
   }
 
   async addProductToOrder(orderId: string, productId: string, count: number): Promise<Order> {
-    const results = this.source.addToOrder(orderId, productId, count);
+    const results = await this.source.addToOrder(orderId, productId, count);
 
     return results;
   }
 
   async cancelOrder(orderId: string): Promise<Order> {
-    const results = this.source.cancelOrder(orderId);
+    const results = await this.source.cancelOrder(orderId);
 
     return results;
   }
 
   async getOrderItems(orderId: string): Promise<string[]> {
-    const results = this.source.getOrder(orderId);
+    const results = await this.source.getOrder(orderId);
+
+    const items: string[] = [] as string[];
+
+    for (const item in results.items) {
+      items.push(item);
+    }
+
+    return items;
   }
 };
 

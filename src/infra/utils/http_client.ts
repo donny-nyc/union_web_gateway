@@ -1,4 +1,4 @@
-import http, { OutgoingHttpHeader } from 'http';
+import http from 'http';
 
 export enum HttpVerb {
   GET = "GET",
@@ -12,11 +12,11 @@ export enum HttpHeader {
   CONTENT_SIZE = "Content-Size",
 };
 
-export interface HttpClientI<T> {
-  get(host: string, port: number, path: string): Promise<T>;
-  post(host: string, port: number, path: string, body?: any): Promise<T>;
-  put(host: string, port: number, path: string, body?: any): Promise<T>;
-  delete(host: string, port: number, path: string): Promise<T>;
+export interface HttpClientI {
+  get(host: string, port: number, path: string): any;
+  post(host: string, port: number, path: string, body?: any): any;
+  put(host: string, port: number, path: string, body?: any): any;
+  delete(host: string, port: number, path: string): any;
 };
 
 type HttpClientOptions = {
@@ -30,9 +30,9 @@ type HttpClientOptions = {
   }
 };
 
-export class HttpClient<T> {
-  get(host: string, port: number, path: string): Promise<T> {
-    return new Promise<T>((resolve) => {
+export class HttpClient {
+  static get(host: string, port: number, path: string) {
+    return new Promise((resolve) => {
       const options = this.prepareOptions(
         host,
         port,
@@ -56,7 +56,7 @@ export class HttpClient<T> {
 
           console.log(Buffer.concat(data).toString());
 
-          const result: T = JSON.parse(Buffer.concat(data).toString())
+          const result = JSON.parse(Buffer.concat(data).toString())
 
           console.log('[Orders] GET result: ', result);
 
@@ -72,13 +72,13 @@ export class HttpClient<T> {
     });
   }
 
-  post(
+  static post(
     host: string, 
     port: number, 
     path: string, 
     body: any
-  ): Promise<T> {
-    return new Promise<T>((resolve) => {
+  ) {
+    return new Promise((resolve) => {
       const postData: string = JSON.stringify(body);
 
       const contentLength: number = Buffer.byteLength(postData);
@@ -106,7 +106,7 @@ export class HttpClient<T> {
         res.on('end', () => {
           console.log(Buffer.concat(data).toString());
 
-          const result: T = JSON.parse(Buffer.concat(data).toString())
+          const result = JSON.parse(Buffer.concat(data).toString())
 
           console.log('POST results:', result);
 
@@ -126,13 +126,13 @@ export class HttpClient<T> {
     });
   }
 
-  put(
+  static put(
     host: string, 
     port: number, 
     path: string, 
     body: any
-  ): Promise<T> {
-    return new Promise<T>((resolve) => {
+  ) {
+    return new Promise((resolve) => {
       const putData: string = JSON.stringify(body);
 
       const contentLength: number = Buffer.byteLength(putData);
@@ -160,7 +160,7 @@ export class HttpClient<T> {
         res.on('end', () => {
           console.log(Buffer.concat(data).toString());
 
-          const result: T = JSON.parse(Buffer.concat(data).toString())
+          const result = JSON.parse(Buffer.concat(data).toString())
 
           console.log('PUT results:', result);
 
@@ -180,8 +180,8 @@ export class HttpClient<T> {
     });
   }
 
-  delete(host: string, port: number, path: string): Promise<T> {
-    return new Promise<T>((resolve) => {
+  static delete(host: string, port: number, path: string) {
+    return new Promise((resolve) => {
       const options = this.prepareOptions(
         host,
         port,
@@ -204,7 +204,7 @@ export class HttpClient<T> {
         res.on('end', () => {
           console.log(Buffer.concat(data).toString());
 
-          const result: T = JSON.parse(Buffer.concat(data).toString())
+          const result = JSON.parse(Buffer.concat(data).toString())
 
           console.log('DELETE results:', result);
 
@@ -220,7 +220,7 @@ export class HttpClient<T> {
     });
   }
 
-  private prepareOptions(
+  private static prepareOptions(
     host: string,
     port: number,
     path: any,
@@ -248,3 +248,5 @@ export class HttpClient<T> {
     };
   }
 };
+
+export default HttpClient;
