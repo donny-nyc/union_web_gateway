@@ -58,13 +58,13 @@ class OrdersSource {
 
     const url = `/orders/${orderId}`;
 
-    const res
-      = await HttpClient.get(this.ordersHost, this.ordersPort, url);
+    const res = await HttpClient.get(
+      this.ordersHost, 
+      this.ordersPort, 
+      url
+    ) as GetOrderResponse;
 
-    const orderResponse 
-      = JSON.parse(res as string) as GetOrderResponse;
-
-    const order: Order = orderResponse.order;
+    const order: Order = res.order;
 
     return order;
   }

@@ -6,6 +6,11 @@ addToOrder=$(curl -s -X PUT localhost:8080/orders/$newOrderId/add-to-order -H 'C
 
 echo $addToOrder
 
+getOrder=$(curl -s -X GET localhost:8080/orders/$newOrderId/items)
+
+echo "getOrder"
+echo $getOrder
+
 cancelResult=$(curl -s -X DELETE localhost:8080/orders/$newOrderId/cancel-order)
 
 echo $cancelResult

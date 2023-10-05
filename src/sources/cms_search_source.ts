@@ -21,7 +21,7 @@ type GetProductResponse = {
 
 class CmsSearchSource {
   private static productsHost = "localhost";
-  private static productsPort = 1111;
+  private static productsPort = 9999;
 
   static async fetchProduct(
     productId: string
@@ -30,14 +30,11 @@ class CmsSearchSource {
 
     const productsUrl = `/crud/${productId}`;
 
-    const response
-      = await HttpClient.get(
+    const product = await HttpClient.get(
         this.productsHost, 
         this.productsPort,
-        productsUrl);
-
-    const product
-      = JSON.parse(response as string) as GetProductResponse;
+        productsUrl
+    ) as GetProductResponse;
 
     if (!product) {
       console.error("[fetchProduct] Error: no product found");
