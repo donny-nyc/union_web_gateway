@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import OrdersController from '../controllers/orders_controller';
+import Order, { Product } from '../../sources/types/order';
 import bodyParser from 'body-parser';
 
 const router = express.Router();
@@ -17,7 +18,7 @@ router.post('/start-order', async (_: Request, res: Response) => {
   res.json({ results });
 });
 
-router.delete('/cancel-order/:orderId', bodyParser.json(), async(req: Request, res: Response) => {
+router.delete('/:orderId/cancel-order', bodyParser.json(), async(req: Request, res: Response) => {
   console.log('[Cancel Order]', req.body);
   console.log('[Cancel Order]', req.params);
 
@@ -32,13 +33,29 @@ router.delete('/cancel-order/:orderId', bodyParser.json(), async(req: Request, r
   res.json({ results });
 });
 
-router.put('/add-to-order/:orderId', bodyParser.json(), async(req: Request, res: Response) => {
+router.put('/:orderId/add-to-order', bodyParser.json(), async(req: Request, res: Response) => {
   console.log('[add to order]', req.body);
   console.log('[add to order]', req.params);
 
   const orderId = req.params.orderId;
   const productId = req.body.productId;
   const count = req.body.count;
+
+  const errors: Record<string, string[]> = {};
+
+  if (!productId) {
+    errors['productId'] = ['productId missing'];
+  }
+
+  if (!count) {
+    errors['count'] = ['count missing'];
+  }
+
+  if (Object.keys(errors).length) {
+    console.error(errors);
+
+    return res.status(400).json({errors});
+  }
 
   const results 
       = await OrdersController.addProductToOrder(
@@ -50,17 +67,28 @@ router.put('/add-to-order/:orderId', bodyParser.json(), async(req: Request, res:
   res.json({ results });
 });
 
-router.get('/order-items/:orderId', bodyParser.json(), async(req: Request, res: Response) => {
+router.get('/:orderId/items', bodyParser.json(), async(req: Request, res: Response) => {
   console.log('[GET Order Items]', req.body);
-  console.log('[GET Order Items]', req.params);
+  console.log('[GET Order Items] params', req.params);
 
-  const orderId = req.params.orderId;
+  const orderId: string = req.params.orderId;
 
-  //const itemIds = await OrdersController.getOrderItems(orderId);
+  const orderItems: Product[] = await OrdersController.getOrderItems(orderId);
 
-  //const orderItems = await CMSController.bulkFetchItems(itemIds);
+  console.log('[GET Order Items] items', orderItems);
 
-  // res.json({ orderItems }) or something to that effect
+  if (!orderItems) {
+    console.error('[GET Order Items] Error: not found');
+    res.status(404).json({
+      message: 'Order not found'
+    });
+  }
+
+  res.json({
+    message: 'Order found',
+    orderId: orderId,
+    products: orderItems
+  });
 });
 
 export default router;

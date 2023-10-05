@@ -43,18 +43,16 @@ export class HttpClient {
       const req = http.request(options, (res) => {
         let data: any = []
 
-        if(res.statusCode !== 200) {
-          throw new Error("failed to get");
-        }
-
         res.on('data', chunk => {
           data.push(chunk);
         });
 
         res.on('end', () => {
-          console.log('Order found');
-
           console.log(Buffer.concat(data).toString());
+
+          if(res.statusCode !== 200) {
+            console.error('failed to get');
+          }
 
           const result = JSON.parse(Buffer.concat(data).toString())
 
@@ -76,12 +74,12 @@ export class HttpClient {
     host: string, 
     port: number, 
     path: string, 
-    body: any
+    body?: any
   ) {
     return new Promise((resolve) => {
       const postData: string = JSON.stringify(body);
 
-      const contentLength: number = Buffer.byteLength(postData);
+      const contentLength: number = body ? Buffer.byteLength(postData) : 0;
 
       const options = this.prepareOptions(
         host,
@@ -95,16 +93,16 @@ export class HttpClient {
         = http.request(options, (res) => {
         let data: any = []
 
-        if(res.statusCode !== 200) {
-          throw new Error("failed to post");
-        }
-
         res.on('data', chunk => {
           data.push(chunk);
         });
 
         res.on('end', () => {
           console.log(Buffer.concat(data).toString());
+
+          if(res.statusCode !== 200) {
+            console.error(`failed to post ${res.statusCode}`);
+          }
 
           const result = JSON.parse(Buffer.concat(data).toString())
 
@@ -135,7 +133,11 @@ export class HttpClient {
     return new Promise((resolve) => {
       const putData: string = JSON.stringify(body);
 
-      const contentLength: number = Buffer.byteLength(putData);
+      console.log('[HTTP Put] Body', putData);
+
+      const contentLength: number = body ? Buffer.byteLength(putData) : 0;
+
+      console.log('[HTTP Put] conent-length', contentLength);
 
       const options = this.prepareOptions(
         host,
@@ -149,16 +151,16 @@ export class HttpClient {
         = http.request(options, (res) => {
         let data: any = []
 
-        if(res.statusCode !== 200) {
-          throw new Error("failed to put");
-        }
-
         res.on('data', chunk => {
           data.push(chunk);
         });
 
         res.on('end', () => {
           console.log(Buffer.concat(data).toString());
+
+          if(res.statusCode !== 200) {
+            console.error(`failed to put ${res.statusCode}`);
+          }
 
           const result = JSON.parse(Buffer.concat(data).toString())
 
@@ -170,6 +172,7 @@ export class HttpClient {
 
       try {
         if (contentLength > 0) {
+          console.log('[HTTP Put] Write data');
           req.write(putData);
         }
 
@@ -193,16 +196,16 @@ export class HttpClient {
         = http.request(options, (res) => {
         let data: any = []
 
-        if(res.statusCode !== 200) {
-          throw new Error("failed to DELETE");
-        }
-
         res.on('data', chunk => {
           data.push(chunk);
         });
 
         res.on('end', () => {
           console.log(Buffer.concat(data).toString());
+
+          if(res.statusCode !== 200) {
+            console.error(`failed to delete`, res.statusCode);
+          }
 
           const result = JSON.parse(Buffer.concat(data).toString())
 
@@ -229,13 +232,13 @@ export class HttpClient {
   ): HttpClientOptions {
     const headers = contentLength ?
       {
-        'Content-Type': 'application-json',
+        'Content-Type': 'application/json',
         'Content-Length': contentLength,
       }
     
     :
       {
-        'Content-Type': 'application-json',
+        'Content-Type': 'application/json',
       }
     ;
 

@@ -1,5 +1,5 @@
 import HttpClient from '../infra/utils/http_client';
-import Order, { Product } from './types/order';
+import Order from './types/order';
 
 type GetOrderResponse = {
   message: string,
@@ -11,37 +11,49 @@ type AddToOrderResponse = {
   order: Order,
 };
 
-type GetProductResponse = {
+type CancelOrderResponse = {
+  message: string,
   id: string,
-  name: string,
-  price: number,
-  keywords: string[],
-  unit?: string,
-  description?: string,
+};
+
+type StartNewOrderResponse = {
+  message: string,
+  order: Order
 };
 
 export interface OrdersSourceI {
   startNewOrder: () => Promise<Order>;
   addToOrder: (orderId: string, productId: string, count: number) => Promise<Order>;
-  cancelOrder: (orderId: string) => Promise<Order>;
+  cancelOrder: (orderId: string) => Promise<string | void>;
   getOrder: (orderId: string) => Promise<Order>;
 };
 
 
 class OrdersSource {
-  private ordersHost = "localhost";
-  private ordersPort = 4321;
+  private static ordersHost = "localhost";
+  private static ordersPort = 4321;
 
-  private productsHost = "localhost";
-  private productsPort = 9999;
-  
-  cancelOrder = (orderId: string): Order => {
-    console.log('[cancelOrder] orderId', orderId);
+  static async cancelOrder(orderId: string): Promise<string | void> {
+    console.log(`[cancelOrder] orderId ${orderId}`);
+
+    const url = `/orders/${orderId}`;
+
+    const cancelResult
+      = await HttpClient.delete(
+        this.ordersHost,
+        this.ordersPort,
+        url
+      ) as CancelOrderResponse;
+
+    console.log(`[orders source] [cancel order] order cancelled`,
+      orderId, cancelResult);
+
+    const cancelledId: string = cancelResult.id;
     
-    return {} as Order;
+    return cancelledId;
   };
 
-  async getOrder(orderId: string): Promise<Order> {
+  static async getOrder(orderId: string): Promise<Order> {
     console.log(`[Orders] Fetching order ${orderId}`);
 
     const url = `/orders/${orderId}`;
@@ -52,149 +64,52 @@ class OrdersSource {
     const orderResponse 
       = JSON.parse(res as string) as GetOrderResponse;
 
-    const order = orderResponse.order;
-
-    order.products = new Map<string, Product>();
-
-    for(const itemKey in order.items) {
-      const productsUrl = `/crud/${itemKey}`;
-
-      const response
-        = await HttpClient.get(
-          this.productsHost, 
-          this.productsPort,
-          productsUrl);
-
-      const product
-        = JSON.parse(response as string) as GetProductResponse;
-
-      order.products.set(itemKey, product);
-    }
+    const order: Order = orderResponse.order;
 
     return order;
   }
 
-  async addToOrder(
+  static async addToOrder(
     orderId: string, 
     productId: string, 
     count: number
   ): Promise<Order> {
     console.log(`[Orders] Adding product to order: product: ${productId}, count: ${count}, orderId: ${orderId}`);
 
-    const postData = {
-      orderId,
+    const data = {
       productId,
       count
     };
 
-    const path = `/orders/add-to-order/${orderId}`;
+    const path = `/orders/${orderId}/add-to-order`;
 
-    const res = await HttpClient.post(
+    const res = await HttpClient.put(
       this.ordersHost, 
       this.ordersPort, 
       path, 
-      postData
-    );
+      data
+    ) as AddToOrderResponse;
 
-    const addToOrderResult 
-      = JSON.parse(res as string) as AddToOrderResponse;
+    console.log(res.order.items);
 
-    return addToOrderResult.order;
+    return res.order;
   };
 
-  /*
-  startNewOrder = async (): Promise<Order> => {
-    const requestPromise = new Promise<Order>((resolve) => {
-      console.log('[Orders] Creating New Order');
+  static async startNewOrder(): Promise<Order> {
+    console.log("[startNewOrder]");
 
-      const post_options = {
-        host: 'localhost',
-        port: 4321,
-        path: '/orders',
-        method: 'POST',
-      };
+    const path = '/orders/';
 
-      const req = http.request(post_options, (res) => {
-        let data: any = []
+    const res = await HttpClient.post(
+      this.ordersHost,
+      this.ordersPort,
+      path
+    ) as StartNewOrderResponse;
 
-        res.on('data', chunk => {
-          data.push(chunk);
-        });
+    console.log("[startNewOrder] results", res);
 
-        res.on('end', () => {
-          console.log('Order created');
-
-          console.log(Buffer.concat(data).toString());
-
-          const orderResult: NewOrderResult = JSON.parse(Buffer.concat(data).toString())
-
-          console.log('[Orders] new order: ', orderResult);
-
-          const order: Order = {
-            id: orderResult.data.order.id
-          }
-
-          resolve(order);
-        });
-      });
-
-      req.end();
-    });
-
-    const result: Order = await requestPromise;
-
-    console.log(result);
-
-    return result;
+    return res.order;
   }
-
-  cancelOrder = async (orderId: string): Promise<Order> => {
-    const requestPromise = new Promise<Order>((resolve) => {
-      console.log('[Orders] Cancelling an order');
-
-      const post_options = {
-        http: 'localhost',
-        port: 4321,
-        path: '/orders',
-        method: 'DELETE',
-      };
-
-      const req = http.request(post_options, (res) => {
-        let data: any = [];
-
-        res.on('data', chunk => {
-          data.push(chunk);
-        });
-
-        res.on('end', () => {
-          console.log('Order Cancelled');
-
-          console.log(Buffer.concat(data).toString());
-
-          const orderResult: CancelledOrderResult = JSON.parse(Buffer.concat(data).toString());
-
-          console.log('[Orders] Cancelled Order:', orderResult);
-
-          const order: Order = {
-            id: orderResult.data.order.id
-          }
-
-          resolve(order);
-        });
-      });
-
-      req.end();
-    });
-
-    const result: Order = await requestPromise;
-
-    console.log(result);
-
-    return result;
-  }
-  */
 }
 
-const source = new OrdersSource();
-
-export default source;
+export default OrdersSource;

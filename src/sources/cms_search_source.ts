@@ -1,3 +1,5 @@
+import HttpClient from '../infra/utils/http_client';
+import {Product} from './types/order';
 import SearchResult from './types/search_result';
 import http from 'http';
 
@@ -8,8 +10,46 @@ type CmsSearchResult = {
   unit?: string,
 };
 
+type GetProductResponse = {
+  id: string,
+  name: string,
+  price: number,
+  keywords: string[],
+  unit?: string,
+  description?: string,
+};
+
 class CmsSearchSource {
-  fetch = async (search: string): Promise<SearchResult[]> => {
+  private static productsHost = "localhost";
+  private static productsPort = 1111;
+
+  static async fetchProduct(
+    productId: string
+  ): Promise<Product | void> {
+    console.log("[fetchProduct] id", productId);
+
+    const productsUrl = `/crud/${productId}`;
+
+    const response
+      = await HttpClient.get(
+        this.productsHost, 
+        this.productsPort,
+        productsUrl);
+
+    const product
+      = JSON.parse(response as string) as GetProductResponse;
+
+    if (!product) {
+      console.error("[fetchProduct] Error: no product found");
+      return;
+    }
+
+    console.log("[fetchProduct] product", product);
+
+    return product;
+  }
+
+  static async fetch(search: string): Promise<SearchResult[]> {
     const requestPromise = new Promise<SearchResult[]>((resolve) => {
       console.log('[CMS Source] Searching for: ', search);
 
@@ -54,6 +94,4 @@ class CmsSearchSource {
   }
 };
 
-const source = new CmsSearchSource();
-
-export default source;
+export default CmsSearchSource;

@@ -1,12 +1,13 @@
 export type OrderItem = {
-  id: string;
-  count: number;
+  productId_: string;
+  count_: number;
 };
 
 export type Product = {
   id: string;
   name: string;
   price: number;
+  keywords: string[];
   unit?: string;
   description?: string;
 };
