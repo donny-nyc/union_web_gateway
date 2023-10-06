@@ -128,7 +128,7 @@ export class HttpClient {
     host: string, 
     port: number, 
     path: string, 
-    body: any
+    body?: any
   ) {
     return new Promise((resolve) => {
       const putData: string = JSON.stringify(body);

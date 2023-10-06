@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import OrdersController from '../controllers/orders_controller';
-import { OrderStatus, Product } from '../../sources/types/order';
+import Order, { OrderStatus, Product } from '../../sources/types/order';
 import bodyParser from 'body-parser';
 
 const router = express.Router();
@@ -33,7 +33,93 @@ router.delete('/:orderId/cancel-order', bodyParser.json(), async(req: Request, r
   res.json({ results });
 });
 
-router.put('/:orderId/add-to-order', bodyParser.json(), async(req: Request, res: Response) => {
+router.delete(
+  '/:orderId/remove-item/:productId', 
+  bodyParser.json(),
+  async(req: Request, res: Response) => {
+    console.log('[orders] [remove item]', req.params);
+
+    const orderId = req.params.orderId;
+    const productId = req.params.productId;
+
+    const removed = await OrdersController.removeItemFromOrder(
+      orderId,
+      productId
+    ) as Order;
+
+    if (!removed) {
+      console.error('failed to remove item from order');
+      return res.status(400).json({
+        message: 'Failed to remove item'
+      });
+    }
+
+    console.log('item removed from order');
+
+    res.json({
+      message: 'Item Removed',
+      order: removed,
+    });
+  });
+
+router.put(
+  '/:orderId/increment/:productId',
+  async (req: Request, res: Response) => {
+  console.log('[increment item count]', req.params);
+
+  const orderId = req.params.orderId;
+  const productId = req.params.productId;
+
+  const results
+    = await OrdersController.incrementItemCount(
+      orderId,
+      productId
+    ) as Order;
+
+  if (!results) {
+    console.error('Failed to increment item count');
+    return res.status(400).json({
+      message: 'Failed to increment item count'
+    });
+  }
+
+  res.json({
+    message: 'Item Count Incremented',
+    order: results
+  });
+});
+
+router.put(
+  '/:orderId/decrement/:productId',
+  async (req: Request, res: Response) => {
+  console.log('[decrement item count]', req.params);
+
+  const orderId = req.params.orderId;
+  const productId = req.params.productId;
+
+  const results
+    = await OrdersController.decrementItemCount(
+      orderId,
+      productId
+    ) as Order;
+
+  if (!results) {
+    console.error('Failed to decrement item count');
+    return res.status(400).json({
+      message: 'Failed to decrement item count'
+    });
+  }
+
+  res.json({
+    message: 'Item Count Decremented',
+    order: results
+  });
+});
+
+router.put(
+  '/:orderId/add-to-order', 
+  bodyParser.json(), 
+  async(req: Request, res: Response) => {
   console.log('[add to order]', req.body);
   console.log('[add to order]', req.params);
 

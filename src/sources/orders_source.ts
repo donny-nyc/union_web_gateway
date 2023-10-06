@@ -6,6 +6,21 @@ type GetOrderResponse = {
   order: Order
 };
 
+type IncrementItemResponse = {
+  message: string,
+  order: Order
+};
+
+type DecrementItemResponse = {
+  message: string,
+  order: Order
+};
+
+type RemoveItemResponse = {
+  message: string,
+  order: Order,
+};
+
 type AddToOrderResponse = {
   message: string,
   order: Order,
@@ -23,15 +38,123 @@ type StartNewOrderResponse = {
 
 export interface OrdersSourceI {
   startNewOrder: () => Promise<Order | void>;
-  addToOrder: (orderId: string, productId: string, count: number) => Promise<Order | void>;
+  addToOrder: (
+    orderId: string, 
+    productId: string, 
+    count: number
+  ) => Promise<Order | void>;
   cancelOrder: (orderId: string) => Promise<string | void>;
   getOrder: (orderId: string) => Promise<Order | void>;
+  removeItemFromOrder: (
+    orderId: string,
+    productId: string
+  ) => Promise<Order | void>;
+  incrementItemCount: (
+    orderId: string,
+    productId: string
+  ) => Promise<Order | void>;
+  decrementItemCount: (
+    orderId: string,
+    productId: string
+  ) => Promise<Order | void>;
 };
-
 
 class OrdersSource {
   private static ordersHost = "localhost";
   private static ordersPort = 4321;
+
+  static async incrementItemCount(
+    orderId: string,
+    productId: string
+  ): Promise<Order | void> {
+    console.log(
+      '[orders_source][increment item count]',
+      orderId,
+      productId
+    );
+
+    const url = `/orders/${orderId}/increment/${productId}`;
+
+    const incrementResult
+      = await HttpClient.put(
+        this.ordersHost,
+        this.ordersPort,
+        url
+      ) as IncrementItemResponse;
+
+    if (!incrementResult.order) {
+      console.error('Failed to increment');
+      return;
+    }
+
+    console.log(
+      '[orders_source][increment item] success',
+      incrementResult.message
+    );
+
+    return incrementResult.order;
+  }
+
+  static async decrementItemCount(
+    orderId: string,
+    productId: string
+  ): Promise<Order | void> {
+    console.log(
+      '[orders_source][decrement item count]',
+      orderId,
+      productId
+    );
+
+    const url = `/orders/${orderId}/decrement/${productId}`;
+
+    const decrementResult
+      = await HttpClient.put(
+        this.ordersHost,
+        this.ordersPort,
+        url
+      ) as DecrementItemResponse;
+
+    if (!decrementResult.order) {
+      console.error('Failed to decrement');
+      return;
+    }
+
+    console.log(
+      '[orders_source][decrement item] success',
+      decrementResult.message
+    );
+
+    return decrementResult.order;
+  }
+
+  static async removeItemFromOrder(
+    orderId: string,
+    productId: string
+  ): Promise<Order | void> {
+    console.log(
+      '[orders_source][remove from order]', 
+      orderId, 
+      productId
+    );
+
+    const url = `/orders/${orderId}/remove-item/${productId}`;
+
+    const removeResult
+      = await HttpClient.delete(
+        this.ordersHost,
+        this.ordersPort,
+        url
+      ) as RemoveItemResponse;
+
+    if (!removeResult.order) {
+      console.error('ERROR: failed to remove item from order');
+      return;
+    }
+
+    console.log(`[orders source][remove item] item removed`);
+
+    return removeResult.order;
+  }
 
   static async cancelOrder(orderId: string): Promise<string | void> {
     console.log(`[cancelOrder] orderId ${orderId}`);

@@ -12,6 +12,18 @@ interface OrdersControllerI {
   getOrderStatus: (orderId: string) => Promise<OrderStatus | void>;
   cancelOrder: (orderId: string) => Promise<string | void>
   getOrderItems: (orderId: string) => Promise<Product[] | void>
+  removeItemFromOrder: (
+    orderId: string, 
+    productId: string
+  ) => Promise<Order | void>;
+  incrementItemCount: (
+    orderId: string,
+    productId: string
+  ) => Promise<Order | void>;
+  decrementItemCount: (
+    orderId: string,
+    productId: string
+  ) => Promise<Order | void>;
 };
 
 class OrdersController implements OrdersControllerI {
@@ -19,6 +31,79 @@ class OrdersController implements OrdersControllerI {
 
   constructor(source: OrdersSourceI) {
     this.source = source;
+  }
+
+  async incrementItemCount(
+    orderId: string,
+    productId: string
+  ): Promise<Order | void> {
+    console.log('[Orders Controller][Increment Order Item]',
+      orderId,
+      productId
+    );
+
+    const order 
+      = await this.source.incrementItemCount(
+        orderId,
+        productId
+      ) as Order;
+
+    if (!order) {
+      console.error('[orders_controller][incrementItemCount] Faild to increment item count');
+      return;
+    }
+
+    console.log('[orders_controller][incrementItemCount] item count incremented')
+    return order;
+  }
+
+  async decrementItemCount(
+    orderId: string,
+    productId: string
+  ): Promise<Order | void> {
+    console.log('[Orders Controller][Decrement Order Item]',
+      orderId,
+      productId
+    );
+
+    const order 
+      = await this.source.decrementItemCount(
+        orderId,
+        productId
+      ) as Order;
+
+    if (!order) {
+      console.error('[orders_controller][decrementItemCount] Faild to decrement item count');
+      return;
+    }
+
+    console.log('[orders_controller][decrementItemCount] item count decremented')
+    return order;
+  }
+
+  async removeItemFromOrder(
+    orderId: string,
+    productId: string
+  ): Promise<Order | void> {
+    console.log(
+      '[Orders Controller][Remove From Order]',
+      orderId,
+      productId
+    );
+
+    const order: Order = await this.source.removeItemFromOrder(
+      orderId,
+      productId
+    ) as Order;
+
+    if (!order) {
+      console.error('[Orders Controller][Remove From Order] ERROR');
+      return;
+    }
+
+    console.log('[Orders Controller][Remove From Order] order', order);
+
+    return order;
   }
 
   async startNewOrder(): Promise<Order | void> {
