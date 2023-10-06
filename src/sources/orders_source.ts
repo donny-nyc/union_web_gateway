@@ -22,10 +22,10 @@ type StartNewOrderResponse = {
 };
 
 export interface OrdersSourceI {
-  startNewOrder: () => Promise<Order>;
-  addToOrder: (orderId: string, productId: string, count: number) => Promise<Order>;
+  startNewOrder: () => Promise<Order | void>;
+  addToOrder: (orderId: string, productId: string, count: number) => Promise<Order | void>;
   cancelOrder: (orderId: string) => Promise<string | void>;
-  getOrder: (orderId: string) => Promise<Order>;
+  getOrder: (orderId: string) => Promise<Order | void>;
 };
 
 
@@ -73,7 +73,7 @@ class OrdersSource {
     orderId: string, 
     productId: string, 
     count: number
-  ): Promise<Order> {
+  ): Promise<Order | void> {
     console.log(`[Orders] Adding product to order: product: ${productId}, count: ${count}, orderId: ${orderId}`);
 
     const data = {
@@ -90,12 +90,18 @@ class OrdersSource {
       data
     ) as AddToOrderResponse;
 
+    if (!res.order) {
+      console.error(`[orders_source] [fetch product] ERROR:
+        unable to fetch product`);
+      return;
+    }
+
     console.log(res.order.items);
 
     return res.order;
   };
 
-  static async startNewOrder(): Promise<Order> {
+  static async startNewOrder(): Promise<Order | void> {
     console.log("[startNewOrder]");
 
     const path = '/orders/';

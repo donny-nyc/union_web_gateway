@@ -8,6 +8,7 @@ export type Product = {
   name: string;
   price: number;
   keywords: string[];
+  count?: number;
   unit?: string;
   description?: string;
 };
@@ -21,7 +22,7 @@ export enum OrderStatus {
 export type Order = {
   id: string;
   status: OrderStatus;
-  items?: Map<string, OrderItem>;
+  items?: Record<string, OrderItem>;
   products?: Map<string, Product>;
 };
 

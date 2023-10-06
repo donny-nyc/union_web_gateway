@@ -1,8 +1,20 @@
 import CmsSearchSource from "../../sources/cms_search_source";
 import source, { OrdersSourceI } from "../../sources/orders_source";
-import Order, { Product } from "../../sources/types/order";
+import Order, { OrderStatus, Product } from "../../sources/types/order";
 
-class OrdersController {
+interface OrdersControllerI {
+  startNewOrder: () => Promise<Order | void>;
+  addProductToOrder: (
+    orderId: string, 
+    productId: string, 
+    count: number
+  ) => Promise<Order | void>;
+  getOrderStatus: (orderId: string) => Promise<OrderStatus | void>;
+  cancelOrder: (orderId: string) => Promise<string | void>
+  getOrderItems: (orderId: string) => Promise<Product[] | void>
+};
+
+class OrdersController implements OrdersControllerI {
   source: OrdersSourceI;
 
   constructor(source: OrdersSourceI) {
@@ -21,7 +33,7 @@ class OrdersController {
     console.log(`[orders_controller] [ startNewOrder] order created`,
       order);
 
-    return order;;
+    return order;
   }
 
   async addProductToOrder(
@@ -29,8 +41,11 @@ class OrdersController {
     productId: string, 
     count: number
   ): Promise<Order> {
-    const results 
-      = await this.source.addToOrder(orderId, productId, count);
+    const results = await this.source.addToOrder(
+      orderId, 
+      productId, 
+      count
+    ) as Order;
 
     return results;
   }
@@ -56,7 +71,9 @@ class OrdersController {
   async getOrderItems(orderId: string): Promise<Product[] | void> {
     console.log("[getOrderItems] orderId", orderId);
 
-    const order: Order = await this.source.getOrder(orderId);
+    const order = await this.source.getOrder(
+      orderId
+    ) as Order;
 
     if (!order) {
       console.error("[getOrderItems] Not found", orderId);
@@ -67,11 +84,16 @@ class OrdersController {
 
     const products: Product[] = [] as Product[];
 
-    for(const itemKey in order.items) {
+    for(const key in order.items) {
+      console.log('key', key);
+      const count = order.items[key]!.count_;
+
       const product 
-        = await CmsSearchSource.fetchProduct(itemKey) as Product;
+        = await CmsSearchSource.fetchProduct(key) as Product;
 
       if(product) {
+        product.count = count;
+
         products.push(product);
       }
     }
@@ -79,6 +101,25 @@ class OrdersController {
     console.log("[getOrderItems] products", products);
 
     return products;
+  }
+
+  async getOrderStatus(
+    orderId: string
+  ): Promise<OrderStatus | void> {
+    console.log("[getOrderStatus] orderId", orderId);
+
+    const order = await this.source.getOrder(
+      orderId
+    ) as Order;
+
+    if (!order) {
+      console.error("[getOrderStatus] Not found", orderId);
+      return;
+    }
+
+    console.log("[getOrderStatus] status", order.status);
+
+    return order.status;
   }
 };
 
